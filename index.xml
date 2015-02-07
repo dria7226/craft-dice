@@ -1,0 +1,195 @@
+<craft name="dice">
+	<parameter name="numberOfSides" type="int" default="6"/>
+	<script type="text/openjscad">
+	function main(params)
+	{
+	    //vars
+	    var sides = params.numberOfSides || 6;
+	    if(sides < 1) sides = 6;
+	    //-------------------
+	    
+	    var c = cube({size : 2 , center : true});
+	    
+	    if(sides == 1)
+	    {
+	    var rect = CSG.Polygon.createFromPoints([
+	        [0, 0, 0],
+	        [1, 0, 0],
+	        [1, 10, 0],
+	        [0, 10, 0]
+	    ]);
+
+	    var angle = 5;
+	    c = rect.solidFromSlices({
+	      numslices: 365 / angle,
+	      callback: function(t, slice) {
+	         return this.rotateZ(2.5 * slice).translate([t,10*t,0]).rotate(
+	            [0,30,0],
+	            [-1, 0, 0],
+	            angle * slice
+	         );
+	      }
+	   });
+	   
+	   c = c.rotateY(90).center(true).translate([0,0,5]);
+	   
+	   c = difference(c,sphere().translate([ 25,0,4]));
+	   c = difference(c,sphere().translate([-25,0,3]));
+	   
+	   c = c.scale(0.2/3);
+	   
+	   return c;
+	}
+    
+    if(sides == 2)
+    {
+        c = difference(cylinder({'h' : 2 , center : true}),cube({size : [2,1,2] , center : [false,false,true]}).translate([-1,0,0]));
+        c = union(c,c.rotateY(90).mirroredY());
+        
+        //carve the numbers
+        var no_1 = sphere({'r' : 0.1 , 'fn' : 16}).translate([1,0.5,0]);
+        
+        var no_2 = no_1.rotateY(90);
+        no_2 = no_2.translate([0.15,-1,0]);
+        no_2 = union(no_2,no_2.mirroredX());
+        
+        no_1 = union(no_1,no_1.mirroredX());
+        no_2 = union(no_2,no_2.mirroredZ());
+        
+        c = difference(c , no_1);
+        c = difference(c , no_2);
+        
+        return c;
+    }
+    
+    if(sides == 6)
+    {   
+        //carve the numbers
+        var a_sphere = sphere({'r' : 0.2 , 'fn' : 16}).translate([0,0,1]);
+        
+        //1
+        c = difference(c , a_sphere);
+        
+        //2
+        c = difference(c , a_sphere.rotateY(90).translate([0,-0.5,-0.5]));
+        c = difference(c , a_sphere.rotateY(90).translate([0, 0.5, 0.5]));
+        
+        //3
+        c = difference(c , a_sphere.rotateX(-90).translate([0.5,0,-0.5]));
+        c = difference(c , a_sphere.rotateX(-90));
+        c = difference(c , a_sphere.rotateX(-90).translate([-0.5,0, 0.5]));
+        
+        //4
+        c = difference(c , a_sphere.rotateX(90).translate([0.5,0,-0.5]));
+        c = difference(c , a_sphere.rotateX(90).translate([-0.5,0,-0.5]));
+        c = difference(c , a_sphere.rotateX(90).translate([0.5,0,0.5]));
+        c = difference(c , a_sphere.rotateX(90).translate([-0.5,0,0.5]));
+        
+        
+        //5
+        c = difference(c , a_sphere.rotateY(-90).translate([0,0,0]));
+        c = difference(c , a_sphere.rotateY(-90).translate([0,0.5,-0.5]));
+        c = difference(c , a_sphere.rotateY(-90).translate([0,-0.5,-0.5]));
+        c = difference(c , a_sphere.rotateY(-90).translate([0,0.5,0.5]));
+        c = difference(c , a_sphere.rotateY(-90).translate([0,-0.5,0.5]));
+        
+        //6
+        c = difference(c , a_sphere.mirroredZ().translate([-0.5,-0.5,0]));
+        c = difference(c , a_sphere.mirroredZ().translate([-0.5,0,0]));
+        c = difference(c , a_sphere.mirroredZ().translate([-0.5,0.5,0]));
+        
+        c = difference(c , a_sphere.mirroredZ().translate([0.5,-0.5,0]));
+        c = difference(c , a_sphere.mirroredZ().translate([0.5,0,0]));
+        c = difference(c , a_sphere.mirroredZ().translate([0.5,0.5,0]));
+        
+        return c;
+    }
+    
+    return spinnerDie(sides);
+	}
+
+	function spinnerDie(s)
+	{
+	    //tabletop spinner
+	    var sides = s;
+	    //create list of vertices
+	    var list_of_vertices = [[0,0,1],[0,0,-1]];
+	    var side_width = 2*Math.PI/sides;
+	    var side_height = side_width*(sides>5) + 0.3*(sides<=5);
+	    //top
+	    for(var i = 0; i < sides;i++)
+	    {
+	        list_of_vertices[list_of_vertices.length] = [cos(i*(360/sides)),sin(i*(360/sides)),side_height/2];
+	    }
+	    //bottom
+	    for(var i = 0; i < sides;i++)
+	    {
+	        list_of_vertices[list_of_vertices.length] = [cos(i*(360/sides)),sin(i*(360/sides)),-side_height/2];
+	    }
+	    
+	    //create list of triangles
+	    var list_of_triangles = [];;        
+	    for(var i = 0; i < sides - 1;i++)
+	    {
+	        //top triangle
+	        list_of_triangles[list_of_triangles.length] = [i+2+1,i+2,0];
+	        
+	        //bottom triangle
+	        list_of_triangles[list_of_triangles.length] = [i+2 + sides,i+2+1 + sides,1];
+	        
+	        //face
+	        list_of_triangles[list_of_triangles.length] = [i+2+1,i+2+1 + sides,i+2];
+	        list_of_triangles[list_of_triangles.length] = [i+2 + sides,i+2,i+2+1 + sides];
+	        
+	    }
+	    //program last pair manually
+	    {
+	        //top triangle
+	        list_of_triangles[list_of_triangles.length] = [2,i+2,0];
+	        
+	        //bottom triangle
+	        list_of_triangles[list_of_triangles.length] = [i+2+sides,2+sides,1];
+	        
+	        //face
+	        list_of_triangles[list_of_triangles.length] = [2,2+sides,i+2];
+	        list_of_triangles[list_of_triangles.length] = [i+2+sides,i+2,2+sides];
+	    }
+	        
+	    //feed and create csg
+	    var c = polyhedron({   points: list_of_vertices,
+	                        triangles: list_of_triangles});
+	             
+	    for(var i = 0; i<sides; i++)
+	    {
+	        //create number
+	        var l = vector_text(0,0,''+(i+1));   // l contains a list of polylines to be drawn
+	        var o = [];
+	        l.forEach(function(pl) {                   // pl = polyline (not closed)
+	        o.push(rectangular_extrude(pl, {w: 3, h: 6}));   // extrude it to 3D
+	        });
+	        
+	        var num = union(o);
+	        //a 1-digit num normally exceeds a 2x2 area by
+	        //a bit, this is to make it fit in 2x2
+	        num = num.scale(0.8);
+	        //scale depending on no of digits
+	        num = num.scale(1/(''+sides).length);
+	        //make it stay upright
+	        num = num.rotateX(90);
+	        //make it face the right direction and center it
+	        num = num.rotateZ(90+(i + 1/2)*(360/sides));
+	        num = num.center(true);
+	        //scale it according to side height
+	        num = num.scale((side_height*0.8*0.1)/2);
+	        //place it properly
+	        num = num.translate([cos((i+1/2)*(360/sides))*cos(180/sides),sin((i+1/2)*(360/sides))*cos(180/sides),0]);
+	        
+	        //difference it
+	        c = difference(c,num);
+	    }
+	             
+	    return c;
+	}
+
+	</script>
+</craft>
