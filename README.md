@@ -1,12 +1,14 @@
 # craft-dice
 
-#Install
+# Install
 `$ npm install craft-dice`
 
-#Parameters
-`numberOfSides - determines how many sides the die has.`
+# Parameters
+```sh
+numberOfSides - determines how many sides the die has.
+```
 
-#Example
+# Example
 
 ```html
 <craft>
