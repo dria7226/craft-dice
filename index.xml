@@ -1,5 +1,5 @@
 <craft name="dice">
-	<parameter name="numberOfSides" type="int" default="6"/>
+	<parameter name="numberOfSides" type="int" default="3"/>
 	<script type="text/openjscad">
 	function main(params)
 	{
@@ -119,12 +119,12 @@
 	    //top
 	    for(var i = 0; i < sides;i++)
 	    {
-	        list_of_vertices[list_of_vertices.length] = [cos(i*(360/sides)),sin(i*(360/sides)),side_height/2];
+	        list_of_vertices[list_of_vertices.length] = [Math.cos(i*(360/sides)),Math.sin(i*(360/sides)),side_height/2];
 	    }
 	    //bottom
 	    for(var i = 0; i < sides;i++)
 	    {
-	        list_of_vertices[list_of_vertices.length] = [cos(i*(360/sides)),sin(i*(360/sides)),-side_height/2];
+	        list_of_vertices[list_of_vertices.length] = [Math.cos(i*(360/sides)),Math.sin(i*(360/sides)),-side_height/2];
 	    }
 	    
 	    //create list of triangles
@@ -182,7 +182,7 @@
 	        //scale it according to side height
 	        num = num.scale((side_height*0.8*0.1)/2);
 	        //place it properly
-	        num = num.translate([cos((i+1/2)*(360/sides))*cos(180/sides),sin((i+1/2)*(360/sides))*cos(180/sides),0]);
+	        num = num.translate([Math.cos((i+1/2)*(360/sides))*Math.cos(180/sides),Math.sin((i+1/2)*(360/sides))*Math.cos(180/sides),0]);
 	        
 	        //difference it
 	        c = difference(c,num);
